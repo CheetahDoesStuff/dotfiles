@@ -10,20 +10,25 @@ Item {
 
     function handleLine(line) {
         if (!line) return
-        var parts = line.trim().split(/\s+/)
-        if (parts.length < 3) return
+        var parsed
 
-        var type = parts[1]
-        if (type !== "tag") return
+        try { parsed = JSON.parse(line) }
+        catch (e) { return }
 
-        var num = parseInt(parts[2])
-        var state = parseInt(parts[3])
-        var clients = parseInt(parts[4])
-        var focused = parseint(parts[5])
-        if (isNaN(num) || num < 1 || num > tagCount) return
+        if (!parsed.tags) return
 
         var next = tagList.slice()
-        netxt[num-1] = {num: num, state: state, clients: clients, focused: focused}
+        for (var i = 0; i < parsed.tags.length; i++) {
+            var t = parsed.tags[i]
+            var idx = t.index
+            if (idx < 1 || idx > tagCount) continue
+            next[idx - 1] = {
+                num: idx,
+                isActive: !!t.is_active,
+                isUrgent: !!t.is_urgent,
+                clients: t.client_count || 0,
+            }
+        }
         tagList = next
     }
 
@@ -55,11 +60,8 @@ Item {
 
     Process {
         id: watcher
-        command: root.output.length > 0
-            ? ["mmsg", "-w", "-o", root.output, "-t"]
-            : ["mmsg", "-w", "-t"]
+        command: ["mmsg", "watch", "tags", root.output]
         running: true
-
         stdout: SplitParser { onRead: line => root.handleLine(line) }
     }
 

@@ -8,14 +8,8 @@ wlr-randr --output HDMI-A-1 --pos 1920,0
 systemctl --user unmask xdg-desktop-portal-wlr &
 dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=wlroots
 
-killall waybar
-waybar &
-
-killall walker &
-walker --gapplication-service &
-
-killall elephant &
-elephant &
+killall qs
+qs &
 
 killall snixembed &
 snixembed &
