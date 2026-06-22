@@ -1,10 +1,16 @@
 import Quickshell
+import Quickshell.Io
 import QtQuick
 import "../../config.js" as Config
 
 Item {
     implicitWidth: clockRect.implicitWidth
     implicitHeight: clockRect.implicitHeight
+
+    Process {
+        id: scriptRunner
+        command: ["flameshot", "gui"]
+    }
 
     Rectangle {
         id: clockRect
@@ -13,7 +19,6 @@ Item {
         clip: true
         implicitWidth: innerText.implicitWidth + 24
         implicitHeight: innerText.implicitHeight + 8
-
         border.width: 2
         border.color: mouseArea.containsMouse ? Config.colors.fg0 : Config.colors.bg0
 
@@ -28,19 +33,16 @@ Item {
             id: mouseArea
             anchors.fill: parent
             hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: { scriptRunner.running = true }
         }
 
         Text {
             id: innerText
             anchors.centerIn: parent
-            text: Qt.formatDateTime(clock.date, "hh:mm")
+            text: ""
             color: Config.colors.fg0
-            font { family: "SF Mono"; letterSpacing: -1; pixelSize: 14; weight: 700 }
+            font { family: "JetbrainsMono Nerd Font"; letterSpacing: -1; pixelSize: 14; weight: 700 }
         }
-    }
-
-    SystemClock {
-        id: clock
-        precision: SystemClock.Minutes
     }
 }

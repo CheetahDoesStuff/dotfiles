@@ -74,6 +74,8 @@ ShellRoot {
                 anchors.rightMargin: 4
                 spacing: 4
                 layoutDirection: Qt.RightToLeft
+
+                ScreenshotBtn {}
             }
         }
     }

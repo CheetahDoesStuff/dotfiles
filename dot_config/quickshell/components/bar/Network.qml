@@ -31,8 +31,24 @@ Item {
         color: Config.colors.bg0
         radius: 12
         clip: true
-        implicitWidth: innerText.implicitWidth + 24
+        implicitWidth: 45
         implicitHeight: innerText.implicitHeight + 8
+
+        border.width: 2
+        border.color: mouseArea.containsMouse ? Config.colors.fg0 : Config.colors.bg0
+
+        Behavior on border.color {
+            ColorAnimation {
+                duration: 250
+                easing.type: Easing.InOutQuad
+            }
+        }
+
+        MouseArea {
+            id: mouseArea
+            anchors.fill: parent
+            hoverEnabled: true
+        }
 
         Text {
             id: innerText
