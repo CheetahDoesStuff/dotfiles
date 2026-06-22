@@ -1,21 +1,56 @@
-#! /bin/bash
-
+#!/bin/bash
 set +e
 
+# --- Outputs ---
 wlr-randr --output DP-1 --pos 0,0
 wlr-randr --output HDMI-A-1 --pos 1920,0
 
-systemctl --user unmask xdg-desktop-portal-wlr &
+# --- Portal / DBus env ---
+systemctl --user unmask xdg-desktop-portal-wlr
 dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=wlroots
 
-killall qs
+# --- Helper: kill a process by pattern and wait until it's actually gone ---
+kill_and_wait() {
+  local pattern="$1"
+  local timeout="${2:-3}"
+  pkill -9 -f "$pattern"
+  local waited=0
+  while pgrep -f "$pattern" >/dev/null 2>&1; do
+    sleep 0.1
+    waited=$(echo "$waited + 0.1" | bc)
+    if (($(echo "$waited >= $timeout" | bc -l))); then
+      echo "Warning: $pattern did not die within ${timeout}s"
+      break
+    fi
+  done
+}
+
+# --- Quickshell (main bar) ---
+kill_and_wait "qs"
 qs &
 
-killall snixembed &
+# --- Quickshell (notifications, if you use a second config) ---
+# kill_and_wait "qs -p"
+# qs -p ~/.config/quickshell/notifications.qml &
+
+# --- snixembed ---
+kill_and_wait "snixembed"
 snixembed &
 
+# --- xdg-desktop-portal-wlr ---
+kill_and_wait "xdg-desktop-portal-wlr"
 /usr/lib/xdg-desktop-portal-wlr &
-dunst &
+
+# --- awww-daemon (wallpaper daemon) ---
+kill_and_wait "awww-daemon"
 awww-daemon &
+sleep 0.5 # give the daemon's socket a moment to actually bind before anything tries to use it
+
+# --- Clipboard history watchers ---
+kill_and_wait "wl-paste --type text --watch cliphist"
 wl-paste --type text --watch cliphist store &
-wl-paste --type image --watch cliphist store
+
+kill_and_wait "wl-paste --type image --watch cliphist"
+wl-paste --type image --watch cliphist store &
+
+wait
