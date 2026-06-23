@@ -6,6 +6,7 @@ Item {
     id: root 
     property string output: ""
     property string focusedAppId: ""
+    property string focusedTitle: ""
     property int tagCount: 9
     property var tagList: defaultTagList()
 
@@ -15,6 +16,7 @@ Item {
         try { parsed = JSON.parse(line) }
         catch (e) { return }
         if (parsed.appid !== undefined) focusedAppId = parsed.appid
+        if (parsed.title !== undefined) focusedTitle = parsed.title
     }
 
     function handleLine(line) {

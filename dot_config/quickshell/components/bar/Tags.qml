@@ -12,6 +12,7 @@ Item {
 
     implicitWidth: innerTagRect.implicitWidth
     implicitHeight: innerTagRect.implicitHeight
+    property bool expanded: mouseArea.containsMouse
 
     Rectangle {
         id: innerTagRect
@@ -19,6 +20,22 @@ Item {
         radius: 12
         implicitWidth: innerRow.implicitWidth + 24
         implicitHeight: innerRow.implicitHeight + 8
+        
+        border.width: 2
+        border.color: mouseArea.containsMouse ? Config.colors.fg0 : Config.colors.bg0
+
+        Behavior on border.color {
+            ColorAnimation {
+                duration: 250
+                easing.type: Easing.InOutQuad
+            }
+        }
+
+        MouseArea {
+            id: mouseArea
+            anchors.fill: parent
+            hoverEnabled: true
+        }
 
         RowLayout {
             id: innerRow

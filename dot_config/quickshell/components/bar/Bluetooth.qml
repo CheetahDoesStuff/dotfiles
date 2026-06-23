@@ -6,6 +6,7 @@ import "../../config.js" as Config
 Item {
     implicitWidth: netRect.implicitWidth
     implicitHeight: netRect.implicitHeight
+    property bool expanded: mouseArea.containsMouse
 
     property int connectedCount: 0
     property bool btEnabled: false
@@ -23,7 +24,7 @@ Item {
 
         property int count: 0
 
-        onExited: (code, status) => { connectedCount = btProcess.count }
+        onExited: (code, status) => { connectedCount = btProcess.count; btProcess.count = 0 }
 
         stdout: SplitParser {
             onRead: data => {
@@ -47,7 +48,7 @@ Item {
         color: Config.colors.bg0
         radius: 12
         clip: true
-        implicitWidth: 45
+        implicitWidth: expanded ? innerTextExpanded.implicitWidth + 24 : 45
         implicitHeight: innerText.implicitHeight + 8
 
         border.width: 2
@@ -55,6 +56,13 @@ Item {
 
         Behavior on border.color {
             ColorAnimation {
+                duration: 250
+                easing.type: Easing.InOutQuad
+            }
+        }
+
+        Behavior on implicitWidth {
+            NumberAnimation {
                 duration: 250
                 easing.type: Easing.InOutQuad
             }
@@ -68,10 +76,34 @@ Item {
 
         Text {
             id: innerText
+            opacity: expanded ? 0 : 1
             anchors.centerIn: parent
             text: icon
             color: Config.colors.fg0
             font { family: "JetbrainsMono Nerd Font"; letterSpacing: -1; pixelSize: 14; weight: 700 }
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 250
+                    easing.type: Easing.InOutQuad
+                }
+            }
+        }
+
+        Text {
+            id: innerTextExpanded
+            opacity: expanded ? 1 : 0
+            anchors.centerIn: parent
+            text: icon + " " + connectedCount + " Connected"
+            color: Config.colors.fg0
+            font { family: "SF Mono"; letterSpacing: -1; pixelSize: 14; weight: 700 }
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 250
+                    easing.type: Easing.InOutQuad
+                }
+            }
         }
     }
 }
