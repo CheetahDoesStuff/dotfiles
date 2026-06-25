@@ -1,4 +1,3 @@
-
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -7,6 +6,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
 import Qt5Compat.GraphicalEffects
+import QtQuick.LocalStorage
 
 ShellRoot {
   IpcHandler {
@@ -28,6 +28,7 @@ ShellRoot {
     id: launcher
     title: "Nightfall Application Launcher"
     visible: false
+    Component.onCompleted: initDb()
     
     color: "#04040d"
     width: 560
@@ -35,9 +36,34 @@ ShellRoot {
 
     property string query: ""
 
+    function getDb() { return LocalStorage.openDatabaseSync("nightfall-launcher", "1.0", "Launcher History", 1000000) }
+    function initDb() {
+      const db = getDb()
+      db.transaction(tx => { tx.executeSql("CREATE TABLE IF NOT EXISTS app_usage ( id TEXT PRIMARY KEY, last_used INTEGER )") })
+    }
+    function recordLaunch(id) {
+      const db = getDb()
+      db.transaction(tx => { tx.executeSql(`
+        INSERT OR REPLACE INTO app_usage
+        (id, last_used)
+        VALUES (?, ?)
+      `, [id, Date.now()]) })
+    }
+    function getLastUsed(id) {
+      const db = getDb()
+      let result = 0
+      db.readTransaction(tx => {
+        const rs = tx.executeSql("SELECT last_used FROM app_usage WHERE id = ?", [id])
+        if (rs.rows.length > 0) result = rs.rows.item(0).last_used
+      })
+      console.log("App " + id + " returned lastUsed " + result)
+      return result
+    }
     function launchSelected() {
       if (list.currentItem && list.currentItem.modelData) {
-        list.currentItem.modelData.execute()
+        const app = list.currentItem.modelData
+        recordLaunch(app.id)
+        app.execute()
         launcher.visible = false
       }
     }
@@ -88,11 +114,17 @@ ShellRoot {
           values: {
             const allEntries = [...DesktopEntries.applications.values]
             const q = launcher.query.trim().toLowerCase()
-            if (q == "") { return allEntries }
+            let result = q === ""
+              ? allEntries
+              : allEntries.filter(d =>
+                d.name &&
+                (d.name.toLowerCase().includes(q) || d.genericName.toLowerCase().includes(q))
+              )
 
-            return allEntries.filter(d => {
-              return d.name && d.name.toLowerCase().includes(q)
-            })
+            return result.sort((a, b) =>
+              launcher.getLastUsed(b.id) -
+              launcher.getLastUsed(a.id)
+            )
           }
         }
       }
@@ -146,6 +178,18 @@ ShellRoot {
               font.pointSize: 13
               elide: Text.ElideRight
               verticalAlignment: Text.AlignVCenter
+            }
+
+            Text {
+              id: genericNameLabel
+              color: list.currentIndex === index ? "#2f2f2d" : "#6f6f6d"
+              text: "(" + modelData.genericName + ")"
+              font.pointSize: 11
+              font.italic: true
+              elide: Text.ElideRight
+              verticalAlignment: Text.AlignVCenter
+
+              visible: modelData.genericName && modelData.genericName !== ""
             }
           }
         }
