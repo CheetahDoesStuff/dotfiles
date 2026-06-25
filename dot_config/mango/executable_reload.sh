@@ -25,13 +25,10 @@ kill_and_wait() {
   done
 }
 
-# --- Quickshell (main bar) ---
+# --- Quickshell ---
 kill_and_wait "qs"
 qs &
-
-# --- Quickshell (notifications, if you use a second config) ---
-# kill_and_wait "qs -p"
-# qs -p ~/.config/quickshell/notifications.qml &
+qs -p ~/.config/quickshell/launcher/launcher.qml &
 
 # --- snixembed ---
 kill_and_wait "snixembed"
