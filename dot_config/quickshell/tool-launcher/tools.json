@@ -1,0 +1,4 @@
+{
+  "Application Launcher": { "cmd": "qs ipc -p ~/.config/quickshell/launcher/launcher.qml call launcher toggle", "description": "Nightfall Application Launcher"},
+  "QR Scanner": { "cmd": "bash ~/scripts/qrcode.sh", "description": "Scan a QR Code"}
+}

@@ -29,6 +29,7 @@ kill_and_wait() {
 kill_and_wait "qs"
 qs &
 qs -p ~/.config/quickshell/launcher/launcher.qml &
+qs -p ~/.config/quickshell/tool-launcher/tool-launcher.qml &
 
 # --- snixembed ---
 kill_and_wait "snixembed"

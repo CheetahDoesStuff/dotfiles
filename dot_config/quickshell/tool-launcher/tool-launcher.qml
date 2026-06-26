@@ -9,7 +9,7 @@ import QtQuick.LocalStorage
 
 ShellRoot {
   IpcHandler {
-    target: "launcher"
+    target: "tool-launcher"
 
     function toggle(): void {
       if (launcher.visible) {
@@ -23,9 +23,15 @@ ShellRoot {
     }
   }
 
+  FileView {
+    id: toolsFile
+    path: Qt.resolvedUrl("tools.json").toString().replace("file://", "")
+    watchChanges: true
+  }
+
   FloatingWindow {
     id: launcher
-    title: "Nightfall Application Launcher"
+    title: "Nightfall Tool Launcher"
     visible: false
     Component.onCompleted: initDb()
     onClosed: launcher.visible = false
@@ -36,7 +42,7 @@ ShellRoot {
 
     property string query: ""
 
-    function getDb() { return LocalStorage.openDatabaseSync("nightfall-launcher", "1.0", "Launcher History", 1000000) }
+    function getDb() { return LocalStorage.openDatabaseSync("nightfall-tool-launcher", "1.0", "Tool Launcher History", 1000000) }
     function initDb() {
       const db = getDb()
       db.transaction(tx => { tx.executeSql("CREATE TABLE IF NOT EXISTS app_usage ( id TEXT PRIMARY KEY, last_used INTEGER )") })
@@ -67,6 +73,8 @@ ShellRoot {
       }
     }
 
+    Process {id: proc; running: false}
+
     ColumnLayout {
       anchors.fill: parent
       spacing: 0
@@ -78,8 +86,8 @@ ShellRoot {
         
         Text {
           id: "titleText"
-          text: "Nightfall Application Launcher"
-          font.pixelSize: 16
+          text: "Nightfall Tool Launcher"
+          font.pixelSize: 18
           color: "#04040d"
           Layout.fillWidth: true
           anchors.centerIn: parent
@@ -109,7 +117,7 @@ ShellRoot {
           Keys.onEscapePressed: launcher.visible = false
           
           Keys.onPressed: event => {
-            const alt = event.modifiers & Qt.AltModifier
+            const ctrl = event.modifiers & Qt.ControlModifier
             if (event.key == Qt.Key_Up) {
               event.accepted = true
               if (list.currentIndex > 0) list.currentIndex--
@@ -119,14 +127,19 @@ ShellRoot {
             } else if (event.key == Qt.Key_Return || event.key == Qt.Key_Enter) {
               event.accepted = true
               launcher.launchSelected()
-            } 
+            }
           }
         }
 
         ScriptModel {
           id: filtered
           values: {
-            const allEntries = [...DesktopEntries.applications.values]
+            const allEntries = Object.entries(JSON.parse(toolsFile.text() ?? "{}")).map(([name, tool]) => ({
+              id: name,
+              name: name,
+              genericName: tool.description,
+              execute: () => { proc.command = ["bash", "-c", tool.cmd]; proc.startDetached() }
+            }))
             const q = launcher.query.trim().toLowerCase()
             let result = q === ""
               ? allEntries
