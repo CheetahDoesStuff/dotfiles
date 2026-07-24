@@ -32,33 +32,9 @@ This is packaged using the [chezmoi](https://www.chezmoi.io/) dotfile manager, a
 chezmoi init --apply CheetahDoesStuff
 ```
 
-After this you also have to install the required packages:
-Extra (pacman):
-```text
-dunst
-xorg-xwayland
-greetd
-polkit
-grim
-slurp
-flameshot
-wl-clipboard
-pipewire
-pipewire-pulse
-pipewire-alsa
-wireplumber
-fish
-kitty
-fastfetch
-cava
-neovim
+After this you also have to install the required packages, which i have written a convenient little script for!
+```bash
+curl -fsSL https://l.ch0.dev/7 | bash
 ```
-AUR (paru / yay):
-```text
-mangowm
-quickshell-git
-greetd-tuigreet
-awww
-cliphist
-wl-clip-persist
-```
+
+Then, reboot your computer and it should be all set up!
