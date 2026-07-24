@@ -1,3 +1,4 @@
-These dotfiles are packaged/published using chezmoi, check chezmoi docs for how to install!
+# Nightfall
+**An actively maintained rice for the MangoWM window manager**
 
-This is a work in progress rice, DO NOT USE until i am done with it, thanks :)
+## Pictures / Showcase
